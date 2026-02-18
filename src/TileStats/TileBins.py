@@ -359,6 +359,7 @@ def tile_histogram(
         colors.append(cfunc(r))
 
     fig = None
+    ax = None
     if plot:
         try:
             import matplotlib.pyplot as plt  # type: ignore
