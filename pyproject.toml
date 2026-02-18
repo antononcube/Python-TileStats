@@ -12,6 +12,9 @@ license = {file = "LICENSE"}
 authors = [
   {name = "Anton Antonov"}
 ]
+dependencies = [
+    "matplotlib"
+]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -23,10 +26,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-dependencies = [
-    "matplotlib"
-]
 
 [project.urls]
 homepage = "https://github.com/antononcube/Python-TileStats"
