@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "TileStats"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python package with functions for hexagonal and rectangular tile binning of 2D data."
 readme = "README.md"
 requires-python = ">=3.8"
