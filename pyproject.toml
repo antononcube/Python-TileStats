@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "TileStats"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python package with functions for hexagonal and rectangular tile binning of 2D data."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -23,3 +23,10 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+dependencies = [
+    "matplotlib"
+]
+
+[project.urls]
+homepage = "https://github.com/antononcube/Python-TileStats"
