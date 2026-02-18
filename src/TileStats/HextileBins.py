@@ -290,6 +290,8 @@ def hextile_histogram(
     overlap_factor: Number = 1,
     color_function: Union[str, Callable[[float], object], None] = None,
     plot_legends: Union[None, str] = None,
+    edge_color: Union[None, str] = None,
+    line_width: Union[None, float] = None,
     plot: bool = False,
     **plot_kwargs,
 ):
@@ -322,6 +324,7 @@ def hextile_histogram(
             "min": None,
             "max": None,
             "figure": None,
+            "ax": None
         }
 
     values = [v for _, v in items]
@@ -359,7 +362,7 @@ def hextile_histogram(
 
             fig, ax = plt.subplots()
             for poly, color in zip(polygons, colors):
-                patch = MplPolygon(poly, closed=True, facecolor=color, edgecolor="none")
+                patch = MplPolygon(poly, closed=True, facecolor=color, edgecolor=edge_color, linewidth=line_width)
                 ax.add_patch(patch)
 
             if data_range is not None:
@@ -392,6 +395,7 @@ def hextile_histogram(
         "min": min_tally,
         "max": max_tally,
         "figure": fig,
+        "ax": ax
     }
 
 __all__ = [
