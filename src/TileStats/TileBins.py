@@ -117,6 +117,24 @@ def tile_origin_bins(
     *,
     aggregation_function: Callable[[List[Number]], Number] = sum,
 ) -> Dict[Point, Number]:
+    """Aggregate data into rectangular tile bins keyed by tile origins.
+
+    Supports lists of 2D points or 2D-point->value rules. For 2D point lists, each point
+    increments the value associated with the nearest tile origin by 1.
+    For 2D-point->value rules, values are aggregated per origin using ``aggregation_function``.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar or (x, y) tuple bin sizes in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        aggregation_function: Function used to combine values per bin.
+
+    Returns:
+        Mapping from tile origin points to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``data`` is invalid.
+    """
     bx, by = _as_bin_tuple(bin_size)
 
     if _is_matrix_data(data):
@@ -156,6 +174,24 @@ def tile_center_bins(
     overlap_factor: Number = 1,
     aggregation_function: Callable[[List[Number]], Number] = sum,
 ) -> Dict[Point, Number]:
+    """Aggregate data into rectangular bins keyed by tile centers.
+
+    Uses ``tile_origin_bins`` to compute bin values, then returns the
+    corresponding tile centers as keys.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar or (x, y) tuple bin sizes in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        overlap_factor: Scaling factor for tile size; must be positive.
+        aggregation_function: Function used to combine values per bin.
+
+    Returns:
+        Mapping from tile center points to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``overlap_factor`` is not positive.
+    """
     if overlap_factor <= 0:
         raise ValueError("overlap_factor must be positive")
 
@@ -187,6 +223,24 @@ def tile_polygon_bins(
     overlap_factor: Number = 1,
     aggregation_function: Callable[[List[Number]], Number] = sum,
 ) -> Dict[Polygon, Number]:
+    """Aggregate data into rectangular bins keyed by polygon vertices.
+
+    Uses ``tile_origin_bins`` to compute bin values, then returns the
+    corresponding rectangle polygons as keys.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar or (x, y) tuple bin sizes in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        overlap_factor: Scaling factor for tile size; must be positive.
+        aggregation_function: Function used to combine values per bin.
+
+    Returns:
+        Mapping from rectangle polygons to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``overlap_factor`` is not positive.
+    """
     if overlap_factor <= 0:
         raise ValueError("overlap_factor must be positive")
 
@@ -213,6 +267,22 @@ def tile_bins(
     polygon_keys: bool = True,
     overlap_factor: Number = 1,
 ) -> Dict[Union[Point, Polygon], Number]:
+    """Compute rectangular tile bins keyed by centers or polygons.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar or (x, y) tuple bin sizes in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        aggregation_function: Function used to combine values per bin.
+        polygon_keys: If True, return polygon keys; otherwise return centers.
+        overlap_factor: Scaling factor for tile size; must be positive.
+
+    Returns:
+        Mapping from tile centers or polygons to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``bin_size`` or ``overlap_factor`` is invalid.
+    """
     bx, by = _as_bin_tuple(bin_size)
     if not (_is_number(bx) and _is_number(by) and bx > 0 and by > 0):
         raise ValueError("bin_size must be positive")
@@ -298,6 +368,36 @@ def tile_histogram(
     plot: bool = False,
     **plot_kwargs,
 ):
+    """Build a rectangular tile histogram and optionally render it with matplotlib.
+
+    Histogram types:
+    - 1 or "ColoredPolygons": constant-size tiles colored by tally
+    - 2 or "ProportionalSideSize": side length scaled by tally
+    - 3 or "ProportionalArea": area scaled by tally
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar or (x, y) tuple bin sizes in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range for plotting.
+        aggregation_function: Function used to combine values per bin.
+        histogram_type: Histogram mode selector (int or string).
+        max_tally: Optional explicit maximum for color scaling.
+        min_tally: Optional explicit minimum for color scaling.
+        overlap_factor: Scaling factor for tile size; must be positive.
+        color_function: Matplotlib colormap name or callable mapping [0,1] -> color.
+        plot_legends: If "Automatic", add a colorbar when plotting.
+        edge_color: Edge color passed to matplotlib polygon patches.
+        line_width: Line width passed to matplotlib polygon patches.
+        plot: If True, create a matplotlib figure.
+        **plot_kwargs: Passed to ``Axes.set`` when plotting.
+
+    Returns:
+        A dict with keys ``polygons``, ``values``, ``colors``, ``min``, ``max``,
+        ``figure``, and ``ax``. ``figure``/``ax`` are None if not plotted.
+
+    Raises:
+        ValueError: If ``bin_size`` or ``overlap_factor`` is invalid.
+    """
     bx, by = _as_bin_tuple(bin_size)
     if not (_is_number(bx) and _is_number(by) and bx > 0 and by > 0):
         raise ValueError("bin_size must be positive")
@@ -415,6 +515,17 @@ def tile_bins_plot(
     plot: bool = True,
     **plot_kwargs,
 ):
+    """Render precomputed tile polygon bins with optional matplotlib output.
+
+    Args:
+        bins: Mapping from polygon vertices to numeric values.
+        color_function: Matplotlib colormap name or callable mapping [0,1] -> color.
+        plot: If True, create a matplotlib figure.
+        **plot_kwargs: Passed to ``Axes.set`` when plotting.
+
+    Returns:
+        A dict with keys ``polygons``, ``values``, ``colors``, and ``figure``.
+    """
     if not bins:
         return {"polygons": [], "values": [], "colors": [], "figure": None}
 

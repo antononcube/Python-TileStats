@@ -144,6 +144,24 @@ def hextile_center_bins(
     *,
     aggregation_function: Callable[[List[Number]], Number] = sum,
 ) -> Dict[Point, Number]:
+    """Aggregate data into hex-tile bins keyed by hexagon centers.
+
+    Supports lists of 2D points or 2D-point->value rules. For 2D point lists, each point
+    increments the value associated with the nearest hexagon center by 1.
+    For 2D-point->value rules, values are aggregated per center using ``aggregation_function``.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar bin size in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        aggregation_function: Function used to combine values per bin.
+
+    Returns:
+        Mapping from hexagon center points to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``bin_size`` is not numeric or ``data`` is invalid.
+    """
     if not _is_number(bin_size):
         raise ValueError("bin_size must be a number")
 
@@ -184,6 +202,24 @@ def hextile_polygon_bins(
     overlap_factor: Number = 1,
     aggregation_function: Callable[[List[Number]], Number] = sum,
 ) -> Dict[Polygon, Number]:
+    """Aggregate data into hex-tile bins keyed by polygon vertices.
+
+    Uses ``hextile_center_bins`` to compute bin values, then returns the
+    corresponding hexagon polygons as keys.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar bin size in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        overlap_factor: Scaling factor for hexagon size; must be positive.
+        aggregation_function: Function used to combine values per bin.
+
+    Returns:
+        Mapping from hexagon polygons to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``overlap_factor`` is not positive.
+    """
     if overlap_factor <= 0:
         raise ValueError("overlap_factor must be positive")
 
@@ -210,6 +246,22 @@ def hextile_bins(
     polygon_keys: bool = True,
     overlap_factor: Number = 1,
 ) -> Dict[Union[Point, Polygon], Number]:
+    """Compute hex-tile bins keyed by centers or polygons.
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar bin size in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range used by callers.
+        aggregation_function: Function used to combine values per bin.
+        polygon_keys: If True, return polygon keys; otherwise return centers.
+        overlap_factor: Scaling factor for hexagon size; must be positive.
+
+    Returns:
+        Mapping from hexagon centers or polygons to tallies/aggregated values.
+
+    Raises:
+        ValueError: If ``bin_size`` or ``overlap_factor`` is invalid.
+    """
     if not (_is_number(bin_size) and bin_size > 0):
         raise ValueError("bin_size must be positive")
 
@@ -295,6 +347,36 @@ def hextile_histogram(
     plot: bool = False,
     **plot_kwargs,
 ):
+    """Build a hex-tile histogram and optionally render it with matplotlib.
+
+    Histogram types:
+    - 1 or "ColoredPolygons": constant-size hexagons colored by tally
+    - 2 or "ProportionalSideSize": side length scaled by tally
+    - 3 or "ProportionalArea": area scaled by tally
+
+    Args:
+        data: Sequence of 2D points or mapping/sequence of (point, value) pairs.
+        bin_size: Positive scalar bin size in data units.
+        data_range: Optional ((xmin, xmax), (ymin, ymax)) range for plotting.
+        aggregation_function: Function used to combine values per bin.
+        histogram_type: Histogram mode selector (int or string).
+        max_tally: Optional explicit maximum for color scaling.
+        min_tally: Optional explicit minimum for color scaling.
+        overlap_factor: Scaling factor for hexagon size; must be positive.
+        color_function: Matplotlib colormap name or callable mapping [0,1] -> color.
+        plot_legends: If "Automatic", add a colorbar when plotting.
+        edge_color: Edge color passed to matplotlib polygon patches.
+        line_width: Line width passed to matplotlib polygon patches.
+        plot: If True, create a matplotlib figure.
+        **plot_kwargs: Passed to ``Axes.set`` when plotting.
+
+    Returns:
+        A dict with keys ``polygons``, ``values``, ``colors``, ``min``, ``max``,
+        ``figure``, and ``ax``. ``figure``/``ax`` are None if not plotted.
+
+    Raises:
+        ValueError: If ``bin_size`` or ``overlap_factor`` is invalid.
+    """
     if not (_is_number(bin_size) and bin_size > 0):
         raise ValueError("bin_size must be positive")
     if overlap_factor <= 0:
